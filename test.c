@@ -16,6 +16,8 @@ pthread_t thread1, thread2;
 
 void *recieveFromSocket(void*);
 
+int getOtherSocket(int);
+
 int main()
 {
 	printf("starting\n");
@@ -96,12 +98,26 @@ int main()
 
 void *recieveFromSocket(void* socket) 
 {
-	int sock = (int)socket;
+	int from = (int)socket;
+	int to = getOtherSocket(from);
 	while(1)
 	{
 		unsigned char* pBuffer = (unsigned char *) malloc(0xFFFF);
-		int data_size = recv(sock, pBuffer, 0xFFFF, 0);
-		printf("Packet recieved, %i bytes on %i\n", data_size, sock);
+		struct sockaddr_ll toAddress;
+		int data_size = recv(from, pBuffer, 0xFFFF, 0);
+		printf("Packet recieved, %i bytes on %i\n", data_size, from);
+		if(send(to, pBuffer, data_size, 0)<0)
+		{
+			printf("can't send");
+		}
 
 	}
+}
+
+int getOtherSocket(int socket) {
+	if(socket == sock_raw1) 
+		return sock_raw2;
+	if(socket == sock_raw2)
+		return sock_raw1;
+	return -1;
 }
