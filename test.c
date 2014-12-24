@@ -8,7 +8,7 @@
 #include <netpacket/packet.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
-#include <libexplain/bind.h>
+//#include <libexplain/bind.h>
 
 
 int sock_raw1, sock_raw2;
@@ -37,7 +37,7 @@ int main()
 
 	if(ioctl(sock_raw1, SIOCGIFINDEX, &ifr)<0)
 	{
-		printf("failiure getting eth0 index");
+		printf("failiure getting eth0 index\n");
 	}
 	device.sll_family = AF_PACKET;
 	device.sll_ifindex = ifr.ifr_ifindex;
@@ -46,13 +46,27 @@ int main()
 	if(bind(sock_raw1, (struct sockaddr *) &device, sizeof(device)) == -1)
 	{
 		printf("error binding to device %i (%s)\n", device.sll_ifindex, ifr.ifr_name);
-		printf("%s\n",explain_bind(sock_raw1, (struct sockaddr*) &device, sizeof(device)));
+		//printf("%s\n",explain_bind(sock_raw1, (struct sockaddr*) &device, sizeof(device)));
+	}
+	bzero(&ifr, sizeof(ifr));	
+	strcpy(ifr.ifr_name,"eth1\x00");
+	if(ioctl(sock_raw2, SIOCGIFINDEX, &ifr)<0)
+	{
+		printf("failiure getting eth1 index\n");
+	}
+	
+	device.sll_family = AF_PACKET;
+	device.sll_ifindex = ifr.ifr_ifindex;
+
+	if(bind(sock_raw2, (struct sockaddr *) &device, sizeof(device)) < 0)
+	{
+		printf("error binding to device %i (%s)\n", device.sll_ifindex, ifr.ifr_name);
 	}
 	//setsockopt(sock_raw2, SOL_SOCKET, SO_BINDTODEVICE, "eth1", 4);
 	
 	if(sock_raw1 > -1 && sock_raw2 > -1)
 	{
-		printf("Socket mounted.\n");
+		printf("Sockets mounted.\n");
 	}
 	else
 	{
